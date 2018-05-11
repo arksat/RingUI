@@ -1,0 +1,8 @@
+{
+    "name": "jp.beinteractive.urmotion",
+    "displayName": "UrMotion",
+    "version": "1.0.0",
+    "unity": "2018.1",
+    "description": "Flexible motion engine for non time-based animation in Unity",
+    "dependencies": { }
+}
