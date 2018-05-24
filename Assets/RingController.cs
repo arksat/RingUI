@@ -17,6 +17,7 @@ public class RingController : MonoBehaviour
     public Material[] menuMat = new Material[MAX_MENU_ITEMS];
     GameObject prefab;
     GameObject[] menuList = new GameObject[MAX_MENU_ITEMS];
+    int itemFocus = 1;
 
 
     IEnumerator Start()
@@ -24,7 +25,7 @@ public class RingController : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
 
         prefab = (GameObject)Resources.Load("Cube");
-        bo = GameObject.Find("Base").gameObject;
+        bo = GameObject.Find("MenuBase").gameObject;
 
         //ShowUI(true);
 
@@ -44,7 +45,9 @@ public class RingController : MonoBehaviour
                 //g.transform.localScale = Vector3.one;
 
                 g.GetComponent<MeshRenderer>().material = menuMat[i];
-                g.name = "Cube " + i;
+                g.name = "Item " + i;
+                g.transform.Find("TextArea").gameObject.GetComponent<TextMesh>().text = "menu " + (i+1);
+
                 menuList[i] = g;
 
                 var angle = 90f * (i+1) + 20f;
@@ -59,14 +62,24 @@ public class RingController : MonoBehaviour
         {
             for (var i = 0; i < MAX_MENU_ITEMS; ++i)
             {
-                menuList[i].MotionS().AccelByRatio(Vector2.one * 0.0f, 0.85f);
-                Destroy(menuList[i]);
-            }
+                //menuList[i].MotionS().AccelByRatio(Vector2.one * 0.0f, 0.85f);
 
+                TweenSXYZ.Add(menuList[i], 0.5f, 0.0f).EaseOutExpo().Then(DeleteMenu);           
+            }
         }
 
         isUIVisible = isVisible;
 
+    }
+
+    void DeleteMenu()
+    {
+        print("DELETE focus="+itemFocus);
+        for (var i = 0; i < MAX_MENU_ITEMS; ++i) 
+        {
+            if (i != (itemFocus-1))
+            Destroy(menuList[i]);
+        }
     }
 
     Vector2 GetMousePosition()
@@ -138,24 +151,48 @@ public class RingController : MonoBehaviour
         }
 
 
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            print("^^^^^");
-            baseAngle += 90;
-            if (baseAngle > 270) baseAngle = 359;
-            TweenRZ.Add(bo, 0.7f, baseAngle).EaseOutExpo();
-        }
-
-
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            print("vvvvv");
-            baseAngle -= 90;
-            if (baseAngle < 0) baseAngle = 0;
+            itemFocus++;
 
-            TweenRZ.Add(bo, 0.8f, baseAngle).EaseOutExpo();
+            if (itemFocus > MAX_MENU_ITEMS)
+            {
+                itemFocus = MAX_MENU_ITEMS;
+            }
 
+            baseAngle = 90 * (itemFocus-1);
+            
+            TweenRZ.Add(bo, 0.7f, baseAngle).EaseOutExpo();
+            
+            RotateMenu(baseAngle);
+
+            print  ("Down. Focus=" + itemFocus + "  angle=" + baseAngle);
         }
+
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            itemFocus--;
+            
+            if (itemFocus < 1)
+            {
+                itemFocus = 1;
+            }
+            baseAngle = 90 * (itemFocus-1);
+            TweenRZ.Add(bo, 0.8f, baseAngle).EaseOutExpo();
+            RotateMenu(baseAngle);
+            print("Up. Focus=" + itemFocus + "  angle=" + baseAngle);
+        }
+    }
+
+    void RotateMenu(float angle)
+    {
+        for (var i = 0; i < MAX_MENU_ITEMS; ++i)
+        {
+             
+            TweenRZ.Add(menuList[i], 0.5f, -angle).EaseOutExpo();           
+        }
+    
     }
 }
 
